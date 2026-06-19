@@ -1,0 +1,216 @@
+:root {
+  color-scheme: light;
+  --bg: #f3f5f4;
+  --panel: #ffffff;
+  --ink: #18232d;
+  --muted: #677584;
+  --line: #d7dee4;
+  --accent: #14746f;
+  --accent-strong: #0b5f5b;
+  --warm: #d18b28;
+  --danger: #b94b4b;
+  --shadow: 0 18px 46px rgba(20, 32, 44, 0.11);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.app-shell {
+  width: min(860px, calc(100vw - 28px));
+  margin: 28px auto;
+}
+
+.display,
+.settings,
+.controls {
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.display {
+  padding: 24px 18px 20px;
+  border-radius: 8px 8px 0 0;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  line-height: 1.1;
+}
+
+.main-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(4rem, 14vw, 8.5rem);
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.phase-label {
+  min-height: 34px;
+  margin-top: 10px;
+  color: var(--accent-strong);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.summary {
+  min-height: 22px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+.settings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+  border-top: 0;
+}
+
+label {
+  display: grid;
+  grid-template-columns: 1fr 94px 70px;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+label span {
+  min-width: 0;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+label small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+input[type="number"] {
+  width: 94px;
+  min-width: 0;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0 8px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="number"]:disabled {
+  background: #eef2f3;
+  color: var(--muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  grid-column: 1 / -1;
+  gap: 10px;
+}
+
+.checkbox-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px;
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  box-shadow: var(--shadow);
+}
+
+.controls button {
+  min-width: 126px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.controls button.secondary {
+  background: #e8edf1;
+  color: var(--ink);
+}
+
+.controls button.running {
+  background: var(--warm);
+}
+
+.controls button.stop-active {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+body.session-active .display {
+  border-color: rgba(20, 116, 111, 0.45);
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: min(100vw - 20px, 860px);
+    margin: 10px auto;
+  }
+
+  .settings {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  label {
+    grid-template-columns: 1fr 86px 58px;
+    padding: 9px 10px;
+  }
+
+  input[type="number"] {
+    width: 86px;
+  }
+
+  .controls {
+    padding: 14px;
+  }
+
+  .controls button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}

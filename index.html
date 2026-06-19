@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Breath Training</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="display" aria-live="polite">
+        <h1>Breath Training</h1>
+        <div id="mainTimer" class="main-timer">00:00</div>
+        <div id="phaseLabel" class="phase-label">Ready</div>
+        <div id="summary" class="summary"></div>
+      </section>
+
+      <section class="settings" aria-label="Breathing settings">
+        <label>
+          <span>Inhale</span>
+          <input id="inhaleSeconds" type="number" min="1" step="1" value="5" />
+          <small>sec</small>
+        </label>
+
+        <label>
+          <span>Hold after inhale</span>
+          <input id="holdInSeconds" type="number" min="0" step="1" value="45" />
+          <small>sec</small>
+        </label>
+
+        <label>
+          <span>Exhale</span>
+          <input id="exhaleSeconds" type="number" min="1" step="1" value="5" />
+          <small>sec</small>
+        </label>
+
+        <label>
+          <span>Hold after exhale</span>
+          <input id="holdOutSeconds" type="number" min="0" step="1" value="5" />
+          <small>sec</small>
+        </label>
+
+        <label>
+          <span>Exercise time</span>
+          <input id="durationMinutes" type="number" min="1" step="1" value="15" />
+          <small>min</small>
+        </label>
+
+        <label>
+          <span>Cycles</span>
+          <input id="cycleCount" type="number" min="1" step="1" value="15" disabled />
+          <small>times</small>
+        </label>
+
+        <label class="checkbox-row">
+          <input id="useCycles" type="checkbox" />
+          <span>Use cycle count instead of time</span>
+        </label>
+
+        <label>
+          <span>Wait before start</span>
+          <input id="leadSeconds" type="number" min="0" step="1" value="15" />
+          <small>sec</small>
+        </label>
+
+        <label>
+          <span>Pre-start beep</span>
+          <input id="preBeepSeconds" type="number" min="0" step="1" value="3" />
+          <small>sec before</small>
+        </label>
+      </section>
+
+      <section class="controls" aria-label="Controls">
+        <button id="startPauseButton" type="button">Start</button>
+        <button id="stopButton" class="secondary" type="button" disabled>Stop</button>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
