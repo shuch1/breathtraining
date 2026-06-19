@@ -4,6 +4,8 @@ Static web app for timed breathing exercises.
 
 Open `index.html` in a browser.
 
+For offline install on a phone, publish the folder through a normal web server or Netlify, open it once online, then use the browser menu to add it to the home screen.
+
 Default pattern:
 
 - Inhale: 5 sec
