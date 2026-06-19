@@ -91,21 +91,38 @@ async function beep(kind) {
     await context.resume();
   }
 
-  const osc = context.createOscillator();
-  const gain = context.createGain();
   const now = context.currentTime;
-  const duration = kind === "long" ? 0.65 : 0.13;
-  const volume = kind === "long" ? 0.34 : 0.24;
+  const pulses =
+    kind === "cycle"
+      ? [
+          { offset: 0, duration: 0.07, frequency: 900, volume: 0.22 },
+          { offset: 0.13, duration: 0.07, frequency: 900, volume: 0.22 },
+        ]
+      : [
+          {
+            offset: 0,
+            duration: kind === "long" ? 0.65 : 0.13,
+            frequency: kind === "long" ? 520 : 760,
+            volume: kind === "long" ? 0.34 : 0.24,
+          },
+        ];
 
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(kind === "long" ? 520 : 760, now);
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(volume, now + 0.015);
-  gain.gain.setValueAtTime(volume, now + duration - 0.035);
-  gain.gain.linearRampToValueAtTime(0, now + duration);
-  osc.connect(gain).connect(context.destination);
-  osc.start(now);
-  osc.stop(now + duration + 0.01);
+  pulses.forEach((pulse) => {
+    const osc = context.createOscillator();
+    const gain = context.createGain();
+    const start = now + pulse.offset;
+    const fade = Math.min(0.015, pulse.duration / 3);
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(pulse.frequency, start);
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(pulse.volume, start + fade);
+    gain.gain.setValueAtTime(pulse.volume, start + pulse.duration - fade);
+    gain.gain.linearRampToValueAtTime(0, start + pulse.duration);
+    osc.connect(gain).connect(context.destination);
+    osc.start(start);
+    osc.stop(start + pulse.duration + 0.01);
+  });
 }
 
 function buildEvents(plan) {
@@ -122,10 +139,12 @@ function buildEvents(plan) {
   for (let cycle = 0; cycle < plan.cycles; cycle += 1) {
     for (let phase = 0; phase < plan.phaseDurations.length; phase += 1) {
       cursor += plan.phaseDurations[phase];
+      const isFinalEvent = cursor >= plan.leadSeconds + plan.exerciseSeconds;
+      const isCycleBoundary = phase === plan.phaseDurations.length - 1;
       events.push({
         at: cursor,
-        kind: cursor >= plan.leadSeconds + plan.exerciseSeconds ? "long" : "short",
-        label: phase === plan.phaseDurations.length - 1 ? "Cycle complete" : phaseNames[phase + 1],
+        kind: isFinalEvent ? "long" : isCycleBoundary ? "cycle" : "short",
+        label: isCycleBoundary ? "Cycle complete" : phaseNames[phase + 1],
       });
     }
   }
