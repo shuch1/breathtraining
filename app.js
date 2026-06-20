@@ -43,10 +43,10 @@ function clamp(value, min) {
 
 function readSettings() {
   const phaseDurations = [
-    clamp(numberValue(els.inhaleSeconds, 0), 0),
-    clamp(numberValue(els.holdInSeconds, 0), 0),
-    clamp(numberValue(els.exhaleSeconds, 0), 0),
-    clamp(numberValue(els.holdOutSeconds, 0), 0),
+    clamp(numberValue(els.inhaleSeconds, 5), 0),
+    clamp(numberValue(els.holdInSeconds, 45), 0),
+    clamp(numberValue(els.exhaleSeconds, 5), 0),
+    clamp(numberValue(els.holdOutSeconds, 5), 0),
   ];
   const cycleSeconds = phaseDurations.reduce((sum, value) => sum + value, 0);
   const leadSeconds = clamp(numberValue(els.leadSeconds, 15), 0);
@@ -97,10 +97,10 @@ function currentFormValues() {
 }
 
 function applyFormValues(values) {
-  els.inhaleSeconds.value = values.inhaleSeconds ?? 0;
-  els.holdInSeconds.value = values.holdInSeconds ?? 0;
-  els.exhaleSeconds.value = values.exhaleSeconds ?? 0;
-  els.holdOutSeconds.value = values.holdOutSeconds ?? 0;
+  els.inhaleSeconds.value = values.inhaleSeconds ?? 5;
+  els.holdInSeconds.value = values.holdInSeconds ?? 45;
+  els.exhaleSeconds.value = values.exhaleSeconds ?? 5;
+  els.holdOutSeconds.value = values.holdOutSeconds ?? 5;
   els.durationMinutes.value = values.durationMinutes ?? 15;
   els.cycleCount.value = values.cycleCount ?? 15;
   els.useCycles.checked = Boolean(values.useCycles);
