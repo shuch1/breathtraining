@@ -11,10 +11,13 @@ const els = {
   useCycles: document.querySelector("#useCycles"),
   leadSeconds: document.querySelector("#leadSeconds"),
   preBeepSeconds: document.querySelector("#preBeepSeconds"),
+  presetSlots: document.querySelector("#presetSlots"),
   startPauseButton: document.querySelector("#startPauseButton"),
   stopButton: document.querySelector("#stopButton"),
 };
 
+const PRESET_KEY = "breathtraining:presets:v1";
+const PRESET_COUNT = 6;
 const phaseNames = ["Inhale", "Hold after inhale", "Exhale", "Hold after exhale"];
 
 const state = {
@@ -40,10 +43,10 @@ function clamp(value, min) {
 
 function readSettings() {
   const phaseDurations = [
-    clamp(numberValue(els.inhaleSeconds, 5), 1),
-    clamp(numberValue(els.holdInSeconds, 45), 0),
-    clamp(numberValue(els.exhaleSeconds, 5), 1),
-    clamp(numberValue(els.holdOutSeconds, 5), 0),
+    clamp(numberValue(els.inhaleSeconds, 0), 0),
+    clamp(numberValue(els.holdInSeconds, 0), 0),
+    clamp(numberValue(els.exhaleSeconds, 0), 0),
+    clamp(numberValue(els.holdOutSeconds, 0), 0),
   ];
   const cycleSeconds = phaseDurations.reduce((sum, value) => sum + value, 0);
   const leadSeconds = clamp(numberValue(els.leadSeconds, 15), 0);
@@ -51,11 +54,11 @@ function readSettings() {
   const useCycles = els.useCycles.checked;
   const requestedCycles = Math.ceil(clamp(numberValue(els.cycleCount, 15), 1));
   const requestedSeconds = clamp(numberValue(els.durationMinutes, 15), 1) * 60;
-  const timeModeCycles = Math.ceil(requestedSeconds / cycleSeconds);
+  const timeModeCycles = cycleSeconds > 0 ? Math.ceil(requestedSeconds / cycleSeconds) : 0;
   const cycles = useCycles ? requestedCycles : timeModeCycles;
   const exerciseSeconds = cycles * cycleSeconds;
 
-  if (!useCycles) {
+  if (!useCycles && cycleSeconds > 0) {
     els.cycleCount.value = String(timeModeCycles);
   }
 
@@ -67,6 +70,7 @@ function readSettings() {
     leadSeconds,
     preBeepSeconds,
     useCycles,
+    isValid: cycleSeconds > 0,
   };
 }
 
@@ -76,6 +80,90 @@ function formatClock(seconds, rounding = "ceil") {
   const minutes = Math.floor(rounded / 60);
   const secs = rounded % 60;
   return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function currentFormValues() {
+  return {
+    inhaleSeconds: numberValue(els.inhaleSeconds, 0),
+    holdInSeconds: numberValue(els.holdInSeconds, 0),
+    exhaleSeconds: numberValue(els.exhaleSeconds, 0),
+    holdOutSeconds: numberValue(els.holdOutSeconds, 0),
+    durationMinutes: numberValue(els.durationMinutes, 15),
+    cycleCount: numberValue(els.cycleCount, 15),
+    useCycles: els.useCycles.checked,
+    leadSeconds: numberValue(els.leadSeconds, 15),
+    preBeepSeconds: numberValue(els.preBeepSeconds, 3),
+  };
+}
+
+function applyFormValues(values) {
+  els.inhaleSeconds.value = values.inhaleSeconds ?? 0;
+  els.holdInSeconds.value = values.holdInSeconds ?? 0;
+  els.exhaleSeconds.value = values.exhaleSeconds ?? 0;
+  els.holdOutSeconds.value = values.holdOutSeconds ?? 0;
+  els.durationMinutes.value = values.durationMinutes ?? 15;
+  els.cycleCount.value = values.cycleCount ?? 15;
+  els.useCycles.checked = Boolean(values.useCycles);
+  els.leadSeconds.value = values.leadSeconds ?? 15;
+  els.preBeepSeconds.value = values.preBeepSeconds ?? 3;
+  updateModeControls();
+  updateDisplay();
+}
+
+function readPresets() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PRESET_KEY));
+    if (Array.isArray(parsed)) {
+      return Array.from({ length: PRESET_COUNT }, (_, index) => parsed[index] || null);
+    }
+  } catch {
+    // Ignore broken local data and start with empty slots.
+  }
+
+  return Array.from({ length: PRESET_COUNT }, () => null);
+}
+
+function writePresets(presets) {
+  localStorage.setItem(PRESET_KEY, JSON.stringify(presets));
+}
+
+function savePreset(index) {
+  const presets = readPresets();
+  presets[index] = currentFormValues();
+  writePresets(presets);
+  renderPresets();
+}
+
+function loadPreset(index) {
+  const preset = readPresets()[index];
+  if (!preset) return;
+  applyFormValues(preset);
+}
+
+function renderPresets() {
+  const presets = readPresets();
+  els.presetSlots.innerHTML = "";
+
+  presets.forEach((preset, index) => {
+    const slot = document.createElement("div");
+    slot.className = `preset-slot${preset ? "" : " empty"}`;
+
+    const loadButton = document.createElement("button");
+    loadButton.type = "button";
+    loadButton.className = "load-preset";
+    loadButton.textContent = `Load ${index + 1}`;
+    loadButton.disabled = !preset;
+    loadButton.addEventListener("click", () => loadPreset(index));
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "button";
+    saveButton.className = "save-preset";
+    saveButton.textContent = `Save ${index + 1}`;
+    saveButton.addEventListener("click", () => savePreset(index));
+
+    slot.append(loadButton, saveButton);
+    els.presetSlots.append(slot);
+  });
 }
 
 function ensureAudio() {
@@ -137,10 +225,20 @@ function buildEvents(plan) {
 
   let cursor = plan.leadSeconds;
   for (let cycle = 0; cycle < plan.cycles; cycle += 1) {
+    let lastPhaseIndex = 0;
+    for (let index = 0; index < plan.phaseDurations.length; index += 1) {
+      if (plan.phaseDurations[index] > 0) {
+        lastPhaseIndex = index;
+      }
+    }
+
     for (let phase = 0; phase < plan.phaseDurations.length; phase += 1) {
-      cursor += plan.phaseDurations[phase];
+      const duration = plan.phaseDurations[phase];
+      if (duration <= 0) continue;
+
+      cursor += duration;
       const isFinalEvent = cursor >= plan.leadSeconds + plan.exerciseSeconds;
-      const isCycleBoundary = phase === plan.phaseDurations.length - 1;
+      const isCycleBoundary = phase === lastPhaseIndex;
       events.push({
         at: cursor,
         kind: isFinalEvent ? "long" : isCycleBoundary ? "cycle" : "short",
@@ -169,6 +267,8 @@ function currentPhase(elapsedExercise) {
 
   for (let index = 0; index < state.plan.phaseDurations.length; index += 1) {
     const duration = state.plan.phaseDurations[index];
+    if (duration <= 0) continue;
+
     if (cyclePosition < cursor + duration || index === state.plan.phaseDurations.length - 1) {
       return {
         name: phaseNames[index],
@@ -182,6 +282,11 @@ function currentPhase(elapsedExercise) {
 }
 
 function updateSummary(plan = readSettings()) {
+  if (!plan.isValid) {
+    els.summary.textContent = "Set breathing times";
+    return;
+  }
+
   const mode = plan.useCycles ? "stopwatch" : "timer";
   els.summary.textContent = `${plan.cycles} cycles - ${formatClock(plan.exerciseSeconds)} - ${mode}`;
 }
@@ -189,9 +294,10 @@ function updateSummary(plan = readSettings()) {
 function updateDisplay() {
   if (!state.plan) {
     const plan = readSettings();
-    els.mainTimer.textContent = plan.useCycles ? "00:00" : formatClock(plan.exerciseSeconds);
+    els.mainTimer.textContent = plan.useCycles || !plan.isValid ? "00:00" : formatClock(plan.exerciseSeconds);
     els.phaseLabel.textContent = "Ready";
     updateSummary(plan);
+    updateStartAvailability(plan);
     return;
   }
 
@@ -200,6 +306,7 @@ function updateDisplay() {
   if (elapsed < state.plan.leadSeconds) {
     els.mainTimer.textContent = formatClock(state.plan.leadSeconds - elapsed);
     els.phaseLabel.textContent = "Starting soon";
+    updateStartAvailability(state.plan);
     return;
   }
 
@@ -213,12 +320,14 @@ function updateDisplay() {
 
   if (exerciseElapsed >= state.plan.exerciseSeconds) {
     els.phaseLabel.textContent = "Done";
+    updateStartAvailability(state.plan);
     return;
   }
 
   const phase = currentPhase(exerciseElapsed);
   const cycle = Math.floor(exerciseElapsed / state.plan.cycleSeconds) + 1;
   els.phaseLabel.textContent = `${phase.name} - ${formatClock(phase.remaining)} - ${cycle}/${state.plan.cycles}`;
+  updateStartAvailability(state.plan);
 }
 
 function tick() {
@@ -245,11 +354,22 @@ function setRunningUi(isRunning) {
   els.stopButton.classList.toggle("stop-active", isRunning || state.status === "paused");
 }
 
+function updateStartAvailability(plan = readSettings()) {
+  const canStart = plan.isValid || state.status === "running" || state.status === "paused";
+  els.startPauseButton.disabled = !canStart;
+}
+
 async function start() {
   const context = ensureAudio();
   await context.resume();
 
   state.plan = readSettings();
+  if (!state.plan.isValid) {
+    state.plan = null;
+    updateDisplay();
+    return;
+  }
+
   state.events = buildEvents(state.plan);
   state.nextEventIndex = 0;
   state.startedAt = performance.now();
@@ -300,9 +420,13 @@ function finish() {
   els.stopButton.disabled = true;
 }
 
-els.useCycles.addEventListener("change", () => {
+function updateModeControls() {
   els.durationMinutes.disabled = els.useCycles.checked;
   els.cycleCount.disabled = !els.useCycles.checked;
+}
+
+els.useCycles.addEventListener("change", () => {
+  updateModeControls();
   if (state.status === "idle" || state.status === "done") updateDisplay();
 });
 
@@ -324,4 +448,6 @@ els.startPauseButton.addEventListener("click", () => {
 
 els.stopButton.addEventListener("click", stop);
 
+renderPresets();
+updateModeControls();
 updateDisplay();

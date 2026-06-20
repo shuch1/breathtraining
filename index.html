@@ -19,25 +19,25 @@
       <section class="settings" aria-label="Breathing settings">
         <label>
           <span>Inhale</span>
-          <input id="inhaleSeconds" type="number" min="1" step="1" value="5" />
+          <input id="inhaleSeconds" type="number" min="0" step="1" value="0" />
           <small>sec</small>
         </label>
 
         <label>
           <span>Hold after inhale</span>
-          <input id="holdInSeconds" type="number" min="0" step="1" value="45" />
+          <input id="holdInSeconds" type="number" min="0" step="1" value="0" />
           <small>sec</small>
         </label>
 
         <label>
           <span>Exhale</span>
-          <input id="exhaleSeconds" type="number" min="1" step="1" value="5" />
+          <input id="exhaleSeconds" type="number" min="0" step="1" value="0" />
           <small>sec</small>
         </label>
 
         <label>
           <span>Hold after exhale</span>
-          <input id="holdOutSeconds" type="number" min="0" step="1" value="5" />
+          <input id="holdOutSeconds" type="number" min="0" step="1" value="0" />
           <small>sec</small>
         </label>
 
@@ -69,6 +69,11 @@
           <input id="preBeepSeconds" type="number" min="0" step="1" value="3" />
           <small>sec before</small>
         </label>
+      </section>
+
+      <section class="presets" aria-label="Presets">
+        <h2>Presets</h2>
+        <div id="presetSlots" class="preset-slots"></div>
       </section>
 
       <section class="controls" aria-label="Controls">

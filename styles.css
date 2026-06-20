@@ -46,6 +46,7 @@ button:disabled {
 
 .display,
 .settings,
+.presets,
 .controls {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -146,6 +147,47 @@ input[type="number"]:disabled {
   accent-color: var(--accent);
 }
 
+.presets {
+  padding: 14px 18px 16px;
+  border-top: 0;
+}
+
+.presets h2 {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.preset-slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.preset-slot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  min-width: 0;
+}
+
+.preset-slot button {
+  min-height: 36px;
+  border-radius: 7px;
+  background: #e8edf1;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.preset-slot button.save-preset {
+  background: #d9ecea;
+  color: var(--accent-strong);
+}
+
+.preset-slot.empty button.load-preset {
+  opacity: 0.5;
+}
+
 .controls {
   display: flex;
   justify-content: center;
@@ -194,6 +236,10 @@ body.session-active .display {
     grid-template-columns: 1fr;
     gap: 9px;
     padding: 12px;
+  }
+
+  .preset-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   label {

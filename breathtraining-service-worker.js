@@ -1,4 +1,4 @@
-const CACHE_NAME = "breathtraining-v2";
+const CACHE_NAME = "breathtraining-v3";
 const ASSETS = [
   "./",
   "index.html",
