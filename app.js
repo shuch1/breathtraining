@@ -254,7 +254,7 @@ function currentElapsed() {
   if (state.status === "paused") {
     return (state.pausedAt - state.startedAt - state.pausedTotal) / 1000;
   }
-  return (performance.now() - state.startedAt - state.pausedTotal) / 1000;
+  return (Date.now() - state.startedAt - state.pausedTotal) / 1000;
 }
 
 function currentExerciseElapsed() {
@@ -372,7 +372,7 @@ async function start() {
 
   state.events = buildEvents(state.plan);
   state.nextEventIndex = 0;
-  state.startedAt = performance.now();
+  state.startedAt = Date.now();
   state.pausedAt = 0;
   state.pausedTotal = 0;
   state.status = "running";
@@ -385,7 +385,7 @@ async function start() {
 }
 
 function pause() {
-  state.pausedAt = performance.now();
+  state.pausedAt = Date.now();
   state.status = "paused";
   clearInterval(state.tickId);
   setRunningUi(false);
@@ -393,7 +393,7 @@ function pause() {
 }
 
 function resume() {
-  state.pausedTotal += performance.now() - state.pausedAt;
+  state.pausedTotal += Date.now() - state.pausedAt;
   state.pausedAt = 0;
   state.status = "running";
   clearInterval(state.tickId);
